@@ -22,18 +22,28 @@ class Remanga:
             key: str = "6LdGNc8UAAAAAOi7mZdoujfQ0s-zHexDM8AWyB1J",
             co: str = "aHR0cHM6Ly9uZXh0LnJlbWFuZ2Eub3JnOjQ0Mw..",
             bg: str = "!u72gvbgKAAQeG9ujbQEHDwNQThjPgVnP7bQGfGtLFTSQ9q7PRWq4Mo6wTK1hF6mTmob321ueoFddZBgl3CNxklbmAd_8x8YxYDs5QrjL7dUsYncpMGmkgC7zGhUD0BwVc3v8cz2Bpap3IHwTDlUSNRYp9EyzZ3WTmkn72WjZixVOb5MJrD7nfwq2T8c8XaIINt60LWpEgRbduOLUxBAynNNCbWdx4R_dhxK7wkXMFMv34aAr9Q8Kj7BGQqoXIU4Ipj_fUd_cuXF4AdbcCERBSRyELilo5WyMkx3yZA_SdwkCg1Dq9JvAHKlhw5nSl49hjcLvBdppQxiX40G_7-wW8f1yOHrBCCut2YB7fGS6TzqRroQhmwufQeuleX1aWRIX-gmXhVdv2-NscuqGbMCugcxXC6GIJK_E3I4fkr5TT6_J4KnmjJLIB23LVrax3N2Da7QXpEq6PhA1WGLrCKxdzONe46StOcc-tKK_zlbg2UCLm0GPV_Ai1qmKKipyCErtZIE4nuqUxbHddY6DUQ_a7tWEA_yDT5Y9txb5XdsdtpLPOULrzElUGyHDKD51acbNfw6sUk5c33LZl20XMJc9sTFSitCX_B1lTMyR63g6FMeZGcFshiVb8-kFdwSlphiiJRTc4hruXo-PtQKM1ZnU0mL2HfQ8D20qDrQIkRI2mMs8QV6vX0zhbCFQ4r6HMdKQQgvlPdox3JjwmXMdVX1jV_wx3JWObthRfEXocF39Km-hQYC-TP06Biej705zlTtXVQ5v5sMgDzBAfYP0sDUr9cjYplzKZ6rkxpCc3BOF1K2Tkfy4JN1mm5l9RpcayJHQyOlCBH_DsTbxqdTESD8uwSGZeTn7uEytRv3-AHA98Qr-gexjL1kEu4ZJBwFHfNIZTP2HSz8Wadvvtc-8pzkn74xljxgvhlbzl9tgshMv5mqicfwSv6rxKy0VWKLk66PwSRsNQM1y77SLQ3c3b73tpv7-c9MgyinRnc-SuxKOdPJLVUiXxd4hhcz7g1fyLSh_LaskcEMTWPKm_uAKHUPy1d7UerHiUc31CdFQaEi6X-knv_d2wVeQtYQhb0WKwfVPNLtbRhbZeMSFtzJWVpwvLq3pyWBvBcVxfvhmCLFAyRcalZLhcRoqXeLorrrwq6mBqBKcAEaCJSJCY7wmqzJbvhTimQGmw1GsPo5rfTeXVfEyJ8TBFTVcAETA_Cl6ea0QWEErqn22tv5EXs7tLRdbYr0jIX3ObDYfJoEq*") -> str:
-        parameters = f"v={v}&reason=q&c=<token>&k={key}&co={co}&hl={hl}&size={size}&chr={chr}&vh={vh}&bg={bg}"
+        parameters = (
+            f"v={v}&reason=q&c=<token>&k={key}&co={co}"
+            f"&hl={hl}&size={size}&chr={chr}&vh={vh}&bg={bg}"
+        )
+        params = {
+            "ar": 1,
+            "k": key,
+            "co": co,
+            "hl": hl,
+            "v": v,
+            "size": size,
+            "cb": cb
+        }
         anchor = self.session.get(
-            f"{self.recaptcha_api}/anchor?ar=1&k={key}&co={co}&hl={hl}&v={v}&size={size}&cb={cb}").text
-        recaptcha_token = anchor.split(
-            'recaptcha-token" value="')[1].split('">')[0]
+            f"{self.recaptcha_api}/anchor", params=params).text
+        recaptcha_token = anchor.split('recaptcha-token" value="')[1].split('">')[0]
         data = parameters.replace("<token>", recaptcha_token)
         self.session.headers["Content-Type"] = "application/x-www-form-urlencoded"
         response = self.session.post(
             f"{self.recaptcha_api}/reload?k={key}", data=data).text
         return response.split(
-                '"rresp","'
-            )[1].split('"')[0] if "rresp" in response else response
+            '"rresp","')[1].split('"')[0] if "rresp" in response else response
 
     def login(
             self,
@@ -119,7 +129,7 @@ class Remanga:
         }
         if username:
             data["username"] = username
-        return requests.put(
+        return self.session.put(
             f"{self.api}/api/users/current/",
             data=data).json()
 
@@ -172,14 +182,8 @@ class Remanga:
             title_id: int,
             page: int = 1,
             ordering: str = "-id") -> dict:
-        data = {
-            "title_id": title_id,
-            "page": page,
-            "ordering": ordering
-        }
         return self.session.get(
-            f"{self.api}/api/activity/comments/?title_id={title_id}&page={page}&ordering={ordering}",
-            data=data).json()
+            f"{self.api}/api/activity/comments/?title_id={title_id}&page={page}&ordering={ordering}").json()
 
     def get_user_info(self, user_id: str) -> dict:
         return self.session.get(
@@ -244,7 +248,7 @@ class Remanga:
             "confirm_password": new_password,
             "password": new_password
         }
-        return requests.put(
+        return self.session.put(
             f"{self.api}/api/users/current/",
             data=data).json()
 
