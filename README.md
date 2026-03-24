@@ -1,10 +1,15 @@
 # 📖 remanga.py
+<p align="center">
+  <a href="https://t.me/forevayounger">
+    <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white" />
+  </a>
+</p>
+
 > Web-API for [remanga.org](https://remanga.org) russian manga reading platform.
 
 ## Quick Start
 ```python
 from remanga import Remanga
-
 remanga = Remanga()
 remanga.login(username="", password="")
 ```
