@@ -30,8 +30,7 @@ class Remanga:
 		if "content" in response:
 			self.user_id = response["content"]["id"]
 			self.access_token = response["content"]["access_token"]
-			self.session.headers["Authorization"] = f"Bearer {
-				self.access_token}"
+			self.session.headers["Authorization"] = f"Bearer {self.access_token}"
 		return response
 
 	def send_comment(
