@@ -15,7 +15,7 @@ class Remanga:
         return self.session.post(f"{self.api}{endpoint}", json=data).json()
 
     def _get(self, endpoint: str, params: dict = None) -> dict:
-        return self.session.get(endpoint, params).json()
+        return self.session.get(endpoint, params=params).json()
 
     def login(
             self,
