@@ -15,7 +15,7 @@ class Remanga:
 		return self._post(f"{self.api}{endpoint}", json=data).json()
 
 	def _get(self, endpoint: str, params: dict = None) -> dict:
-		return self._get(endpoint, params).json()
+		return self._get(endpoint, params)
 
 	def login(
 			self,
@@ -62,7 +62,7 @@ class Remanga:
 			"count": count
 		}
 		return self._get(
-			f"{self.api}/search", params).json()
+			f"{self.api}/search", params)
 
 	def search_publishers(
 			self,
@@ -76,7 +76,7 @@ class Remanga:
 			"query": username
 		}
 		return self._get(
-			f"{self.api}/search", params).json()
+			f"{self.api}/search", params)
 
 	def edit_profile(
 			self,
@@ -352,7 +352,7 @@ class Remanga:
 			"ordering": ordering
 		}
 		return self._get(
-			f"{self.api}/v2/users/bans", params).json()
+			f"{self.api}/v2/users/bans", params)
 
 	def get_shop(
 			self,
@@ -378,7 +378,7 @@ class Remanga:
 			"type": type
 		}
 		return self._get(
-			f"{self.api}/v2/shop", params).json()
+			f"{self.api}/v2/shop", params)
 
 	def get_payments(self, ordering: str = "-date", page: int = 1) -> dict:
 		params = {
@@ -395,7 +395,7 @@ class Remanga:
 			"profile": str(user_id)
 		}
 		return self._post(
-			f"{self.api}/v2/activity/comments/", json=data).json()
+			f"{self.api}/v2/activity/comments/")
 
 	def comment_post(self, post_id: int, text: str) -> dict:
 		data = {
@@ -403,7 +403,7 @@ class Remanga:
 			"post": post_id
 		}
 		return self._post(
-			f"{self.api}/v2/activity/comments/", json=data).json()
+			f"{self.api}/v2/activity/comments/")
 
 	def get_forum_tags(self, count: int = 200, page: int = 1) -> None:
 		params = {
@@ -411,7 +411,7 @@ class Remanga:
 			"page": page
 		}
 		return self._get(
-			f"{self.api}/v2/forum/tags", params).json()
+			f"{self.api}/v2/forum/tags", params)
 
 	def get_forum_feed(
 			self,
@@ -426,7 +426,7 @@ class Remanga:
 			"ordering": ordering
 		}
 		return self._get(
-			f"{self.api}/v2/forum/search", params).json()
+			f"{self.api}/v2/forum/search", params)
 
 	def get_post_comments(self, post_id: int, page: int = 1) -> dict:
 		params = {
@@ -434,7 +434,7 @@ class Remanga:
 			"page": page
 		}
 		return self._get(
-			f"{self.api}/v2/activity/comments", params).json()
+			f"{self.api}/v2/activity/comments", params)
 
 	def create_post(
 			self,
@@ -467,7 +467,7 @@ class Remanga:
 			"tag": tag
 		}
 		return self._get(
-			f"{self.api}/v2/titles/top/?=all", params).json()
+			f"{self.api}/v2/titles/top/?=all", params)
 
 	def get_users_top(
 			self, ordering: str, page: int = 1) -> dict:
@@ -476,4 +476,4 @@ class Remanga:
 			"page": page
 		}
 		return self._get(
-			f"{self.api}/v2/users/top", params).json()
+			f"{self.api}/v2/users/top", params)
