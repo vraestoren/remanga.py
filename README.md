@@ -13,6 +13,7 @@
 ## Quick Start
 ```python
 from remanga import Remanga
+
 remanga = Remanga()
 remanga.login(username="", password="")
 ```
