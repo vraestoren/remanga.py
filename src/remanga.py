@@ -1,6 +1,5 @@
 from requests import Session
 
-
 class Remanga:
 	def __init__(self) -> None:
 		self.api = "https://api.remanga.org/api"
@@ -44,7 +43,8 @@ class Remanga:
 			"text": text,
 			"title": title_id
 		}
-		return self._post("/activity/comments/?title_id={title_id}", data)
+		return self._post(
+            f"/activity/comments/?title_id={title_id}", data)
 
 	def similar_titles(self, title: str) -> dict:
 		return self._get(
@@ -58,8 +58,7 @@ class Remanga:
 			"query": title,
 			"count": count
 		}
-		return self._get(
-			f"{self.api}/search", params)
+		return self._get(f"{self.api}/search", params)
 
 	def search_publishers(
 			self,
@@ -72,8 +71,7 @@ class Remanga:
 			"page": page,
 			"query": username
 		}
-		return self._get(
-			f"{self.api}/search", params)
+		return self._get(f"{self.api}/search", params)
 
 	def edit_profile(
 			self,
@@ -326,11 +324,11 @@ class Remanga:
 
 	def get_lightning_balance(self) -> dict:
 		return self._get(
-			f"{self.api}/v2/billing/lightning-balance/")
+			f"{self.public_api}/v2/billing/lightning-balance/")
 
 	def get_eventpoint_balance(self) -> dict:
 		return self._get(
-			f"{self.api}/v2/events/eventpoint-balance/")
+			f"{self.public_api}/v2/events/eventpoint-balance/")
 
 	def get_current_battlepass(self) -> dict:
 		return self._get(
@@ -347,7 +345,7 @@ class Remanga:
 			"ordering": ordering
 		}
 		return self._get(
-			f"{self.api}/v2/users/bans", params)
+			f"{self.public_api}/v2/user/bans", params)
 
 	def get_shop(
 			self,
