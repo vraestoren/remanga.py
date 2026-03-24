@@ -162,8 +162,14 @@ class Remanga:
 			page: int = 1,
 			status: int = 0,
 			type: int = 0) -> dict:
+		params = {
+			"count": count,
+			"page": page,
+			"status": status,
+			"type": type
+		}
 		return self._get(
-			f"{self.api}/users/notifications/?count={count}&page={page}&status={status}&type={type}")
+			f"{self.api}/users/notifications", params)
 
 	def get_notifications_count(self) -> dict:
 		return self._get(
@@ -180,8 +186,12 @@ class Remanga:
 			self,
 			page: int = 1,
 			count: int = 5) -> dict:
+		params = {
+			"page": page,
+			"count": count
+		}
 		return self._get(
-			f"{self.api}/titles/last-chapters/?page={page}&count={count}")
+			f"{self.api}/titles/last-chapters", params)
 
 	def add_to_bookmarks(
 			self,
@@ -201,7 +211,7 @@ class Remanga:
 			"title": title_id,
 			"type": type
 		}
-		return self._post("/users/bookmarks/", data=data).json()
+		return self._post("/users/bookmarks/", data).json()
 
 	def change_password(
 			self,
@@ -260,16 +270,22 @@ class Remanga:
 	def get_types(self) -> dict:
 		return self._get(f"{self.api}/forms/titles/?get=types")
 
-	def get_statuses(self) -> dict:
+	def get_status(self) -> dict:
 		return self._get(f"{self.api}/forms/titles/?get=status")
 
 	def get_user_bookmarks(
 			self,
 			type: int,
 			user_id: int,
+			ordering: str = "-chapter_date",
 			page: int = 1) -> dict:
+		params = {
+			"ordering": ordering,
+			"page": page,
+			"type": type
+		}
 		return self._get(
-			f"{self.api}/users/{user_id}/bookmarks/?ordering=-chapter_date&page={page}&type={type}")
+			f"{self.api}/users/{user_id}/bookmarks", params)
 
 	def get_user_history(
 			self,
@@ -277,20 +293,6 @@ class Remanga:
 			page: int = 1) -> dict:
 		return self._get(
 			f"{self.api}/users/{user_id}/history/?page={page}")
-
-	def get_social_notifications(
-			self,
-			count: int = 30,
-			page: int = 1) -> dict:
-		return self._get(
-			f"{self.api}/users/notifications/?count={count}&page={page}&status=0&type=1")
-
-	def get_important_notifications(
-			self,
-			count: int = 30,
-			page: int = 1) -> dict:
-		return self._get(
-			f"{self.api}/users/notifications/?count={count}&page={page}&status=0&type=2")
 
 	def reset_password(self, email: str) -> dict:
 		data = {
@@ -379,8 +381,7 @@ class Remanga:
 			"page": page
 		}
 		return self._get(
-			f"{self.api}/v2/billing/users/payments",
-			params=params).json()
+			f"{self.api}/v2/billing/users/payments", params).json()
 
 	def comment_profile(self, user_id: int, text: str) -> dict:
 		data = {
@@ -437,7 +438,7 @@ class Remanga:
 			"header": header,
 			"text": text,
 			"tags": tags,
-			"author_user_id": 282600
+			"author_user_id": self.user_id
 		}
 		if attachments:
 			data["attachments"] = attachments
