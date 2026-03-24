@@ -1,4 +1,7 @@
-# 📖 remanga.py
+<h1>
+  <img src="https://user-images.githubusercontent.com/77536370/229271639-8d9834f9-b983-470b-833b-35ab9496e93d.svg" width="28" style="vertical-align:middle;" />
+  remanga.py
+</h1>
 <p align="center">
   <a href="https://t.me/forevayounger">
     <img src="https://img.shields.io/badge/Telegram-2CA5E0?style=flat&logo=telegram&logoColor=white" />
