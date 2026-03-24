@@ -1,5 +1,5 @@
 <h1>
-  <img src="https://github.com/user-attachments/assets/e8f4d866-2d21-47ae-a3a9-eefecdf7a04e" width="28" style="vertical-align:middle;" />
+  <img src="https://user-images.githubusercontent.com/77536370/229271639-8d9834f9-b983-470b-833b-35ab9496e93d.svg" width="28" style="vertical-align:middle;" />
   remanga.py
 </h1>
 <p align="center">
