@@ -1,20 +1,23 @@
-from requests import Session
+from requests import session
 
-class Remanga:
+class Recomics:
 	def __init__(self) -> None:
-		self.api = "https://api.remanga.org/api"
-		self.public_api = "https://remanga.org/api"
-		self.user_id = None
-		self.access_token = None
+		self.api = "https://api.recomics.org"
 		self.session = Session()
 		self.session.headers = {
-			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36"}
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36"
+		}
+		self.user_id = None
+		self.access_token = None
 
 	def _post(self, endpoint: str, data: dict) -> dict:
 		return self.session.post(f"{self.api}{endpoint}", json=data).json()
 
 	def _get(self, endpoint: str, params: dict = None) -> dict:
-		return self.session.get(endpoint, params=params).json()
+		return self.session.get(f"{self.api}{endpoint}", params=params).json()
+
+	def _put(self, endpoint: str, data: dict) -> dict:
+		return self.session.put(f"{self.api}{endpoint}", data=data).json()
 
 	def login(
 			self,
@@ -23,12 +26,13 @@ class Remanga:
 		data = {
 			"user": username,
 			"password": password,
+			"g-recaptcha-response": self.generate_captcha()
 		}
-		response = self._post("/users/login/", data)
+		response = self._post("/api/users/login/", data)
 		if "content" in response:
 			self.user_id = response["content"]["id"]
 			self.access_token = response["content"]["access_token"]
-			self.session.headers["Authorization"] = f"Bearer {self.access_token}"
+			self.headers["authorization"] = f"bearer {self.access_token}"
 		return response
 
 	def send_comment(
@@ -44,64 +48,56 @@ class Remanga:
 			"title": title_id
 		}
 		return self._post(
-            f"/activity/comments/?title_id={title_id}", data)
+			f"/api/activity/comments/?title_id={title_id}", data)
 
 	def similar_titles(self, title: str) -> dict:
 		return self._get(
-			f"{self.api}/titles/{title}/similar/")
+			f"/api/titles/{title}/similar/")
 
 	def search_title(
 			self,
-			title: str,
+			query: str,
 			count: int = 5) -> dict:
-		params - {
-			"query": title,
+		params = {
+			"query": query,
 			"count": count
 		}
-		return self._get(f"{self.api}/search", params)
+		return self._get("/api/search", params)
 
 	def search_publishers(
 			self,
-			username: str,
+			query: str,
 			page: int = 1,
 			count: int = 10) -> dict:
-		params - {
+		params = {
 			"count": count,
 			"field": "publishers",
 			"page": page,
-			"query": username
+			"query": query
 		}
-		return self._get(f"{self.api}/search", params)
+		return self._get("/api/search", params)
 
 	def edit_profile(
 			self,
 			username: str = None,
-			description: str = None,
-			is_private: str = False,
-			adult: int = 1,
+			adult: bool = False,
 			sex: int = 0,
-			yaoi: int = 0,
-			google_id: int = 0,
-			is_two_factor_auth: bool = False) -> dict:
+			yaoi: int = 0) -> dict:
 		data = {
 			"adult": adult,
 			"sex": sex,
-			"yaoi": yaoi,
-			"username": username,
-			"description": description,
-			"is_private": is_private,
-			"google_id": google_id,
-			"is_two_factor_auth": is_two_factor_auth
+			"yaoi": yaoi
 		}
-		filtered_data = {
-			key: value for key, value in data.items() if value is not None
-		}
-		return self.session.put(
-			f"{self.public_api}/users/current/", data=filtered_data).json()
+		if username:
+			data["username"] = username
+		return self._put("/api/users/current/", data)
 
 	def get_report_reasons(self) -> dict:
-		return self._get(
-			f"{self.api}/reports/?get=reasons&type=title")
+		params = {
+			"get": "reasons",
+			"type": "title"
+		}
+		return self._get("/api/reports/", params)
 
 	def send_report(
 			self,
@@ -125,34 +121,37 @@ class Remanga:
 			"comment": comment_id,
 			"type": type
 		}
-		return self._post("/activity/votes/", data)
+		return self._post("/api/activity/votes/", data)
 
 	def get_genres(self) -> dict:
-		return self._get(
-			f"{self.api}/forms/titles/?get=genres")
+		params = {
+			"get": "genres"
+		}
+		return self._get("/api/forms/titles/", params)
 
 	def get_title_info(self, title: str) -> dict:
-		return self._get(f"{self.api}/titles/{title}/")
+		return self._get(f"/api/titles/{title}/")
 
 	def get_title_chapters(self, branch_id: int) -> dict:
-		return self._get(
-			f"{self.api}/titles/chapters/?branch_id={branch_id}")
+		params = {
+			"branch_id": branch_id
+		}
+		return self._get("/api/titles/chapters/", params)
 
 	def get_title_comments(
 			self,
 			title_id: int,
 			page: int = 1,
 			ordering: str = "-id") -> dict:
-		params = {
+		data = {
 			"title_id": title_id,
 			"page": page,
 			"ordering": ordering
 		}
-		return self._get(
-			f"{self.api}/activity/comments", params)
+		return self._get("/api/activity/comments/", params)
 
 	def get_user_info(self, user_id: str) -> dict:
-		return self._get(f"{self.api}/users/{user_id}")
+		return self._get(f"/api/users/{user_id}")
 
 	def get_notifications(
 			self,
@@ -166,19 +165,20 @@ class Remanga:
 			"status": status,
 			"type": type
 		}
-		return self._get(
-			f"{self.api}/users/notifications", params)
+		return self._get("/api/users/notifications/", params)
 
 	def get_notifications_count(self) -> dict:
-		return self._get(
-			f"{self.api}/users/notifications/count/")
+		return self._get("/api/users/notifications/count/")
 
 	def get_account_info(self) -> dict:
-		return self._get(f"{self.api}/users/current/")
+		return self._get("/api/users/current/")
 
 	def get_daily_top_titles(self, count: int = 5) -> dict:
+		params = {
+			"count": count
+		}
 		return self._get(
-			f"{self.api}/titles/daily-top/?count={count}")
+			"/api/titles/daily-top/", params)
 
 	def get_titles_last_chapters(
 			self,
@@ -189,7 +189,7 @@ class Remanga:
 			"count": count
 		}
 		return self._get(
-			f"{self.api}/titles/last-chapters", params)
+			"/api/titles/last-chapters/", params)
 
 	def add_to_bookmarks(
 			self,
@@ -209,7 +209,7 @@ class Remanga:
 			"title": title_id,
 			"type": type
 		}
-		return self._post("/users/bookmarks/", data).json()
+		return self._post("/api/users/bookmarks/", data)
 
 	def change_password(
 			self,
@@ -220,14 +220,13 @@ class Remanga:
 			"confirm_password": new_password,
 			"password": new_password
 		}
-		return self.session.put(
-			f"{self.api}/users/current/", data).json()
+		return self._put("/api/users/current/", data)
 
 	def bill_promo_code(self, promo_code: str) -> dict:
 		data = {
 			"promo_code": promo_code
 		}
-		return self._post("/billing/promo-codes/", data)
+		return self._post("/api/billing/promo-codes/", data)
 
 	def create_publishers(
 			self,
@@ -237,7 +236,7 @@ class Remanga:
 			"name": name,
 			"vk": vk_url
 		}
-		return self._post("/publishers/", data)
+		return self._post("/api/publishers/", data)
 
 	def rate_title(
 			self,
@@ -247,7 +246,7 @@ class Remanga:
 			"rating": rating,
 			"title": title_id
 		}
-		return self._post("/activity/ratings/", data)
+		return self._post("/api/activity/ratings/", data)
 
 	def like_chapter(
 			self,
@@ -257,212 +256,82 @@ class Remanga:
 			"chapter": chapter_id,
 			"type": type
 		}
-		return self._post("/activity/votes/", data)
+		return self._post(
+			"/api/activity/votes/", data)
 
 	def get_categories(self) -> dict:
-		return self._get(f"{self.api}/forms/titles/?get=categories")
+		params = {
+			"get": "categories"
+		}
+		return self._get(
+			"/api/forms/titles/", params)
 
 	def get_age_limits(self) -> dict:
-		return self._get(f"{self.api}/forms/titles/?get=age_limit")
+		params = {
+			"get": "age_limit"
+		}
+		return self._get(
+			"/api/forms/titles/", params)
 
 	def get_types(self) -> dict:
-		return self._get(f"{self.api}/forms/titles/?get=types")
+		params = {
+			"get": "types"
+		}
+		return self._get(
+			"/api/forms/titles/", params)
 
-	def get_status(self) -> dict:
-		return self._get(f"{self.api}/forms/titles/?get=status")
+	def get_statuses(self) -> dict:
+		params = {
+			"get": "statys"
+		}
+		return self._get(
+			"/api/forms/titles/", params)
 
 	def get_user_bookmarks(
 			self,
 			type: int,
 			user_id: int,
-			ordering: str = "-chapter_date",
 			page: int = 1) -> dict:
 		params = {
-			"ordering": ordering,
+			"ordering": "chapter-date",
 			"page": page,
 			"type": type
 		}
 		return self._get(
-			f"{self.api}/users/{user_id}/bookmarks", params)
+			f"/api/users/{user_id}/bookmarks/", params)
 
 	def get_user_history(
 			self,
 			user_id: int,
 			page: int = 1) -> dict:
-		return self._get(
-			f"{self.api}/users/{user_id}/history/?page={page}")
-
-	def reset_password(self, email: str) -> dict:
-		data = {
-			"email": email,
-			"g-recaptcha-response": "WITHOUT_TOKEN"
-		}
-		return self._post("/users/password-reset/", data)
-
-	def get_billing_premium(self) -> dict:
-		return self._get(f"{self.api}/billing/premium")
-
-	def get_billing_charge(self) -> dict:
-		return self._get(
-			f"{self.api}/v2/billing/charge/")
-
-	def create_billing(
-			self,
-			service: str,
-			amount: int,
-			currency: str = "RUB") -> dict:
-		data = {
-			"service": service,
-			"sum": amount,
-			"currency": currency
-		}
-		return self._post("/v2/billing/charge/", data)
-
-	def get_title_collections(self) -> dict:
-		return self._get(
-			f"{self.api}/v2/titles/collections/")
-
-	def get_lightning_balance(self) -> dict:
-		return self._get(
-			f"{self.public_api}/v2/billing/lightning-balance/")
-
-	def get_eventpoint_balance(self) -> dict:
-		return self._get(
-			f"{self.public_api}/v2/events/eventpoint-balance/")
-
-	def get_current_battlepass(self) -> dict:
-		return self._get(
-			f"{self.api}/battlepass/current/preview/")
-
-	def get_bans(
-			self,
-			count: int = 20,
-			page: int = 20,
-			ordering: str = "-date") -> dict:
 		params = {
-			"count": count,
-			"page": page,
-			"ordering": ordering
-		}
-		return self._get(
-			f"{self.public_api}/v2/user/bans", params)
-
-	def get_shop(
-			self,
-			count: int = 20,
-			page: int = 1,
-			is_event: bool = False,
-			ordering: str = "cost",
-			type: str = "avatar") -> dict:
-		"""
-		 TYPES:
-			AVATAR,
-			FRAME,
-			WALLPAPER,
-			THEME,
-			PACK,
-			DECKS
-		"""
-		params = {
-			"count": count,
-			"page": page,
-			"is_event": is_event,
-			"ordering": ordering,
-			"type": type
-		}
-		return self._get(
-			f"{self.api}/v2/shop", params)
-
-	def get_payments(self, ordering: str = "-date", page: int = 1) -> dict:
-		params = {
-			"ordering": ordering,
 			"page": page
 		}
 		return self._get(
-			f"{self.api}/v2/billing/users/payments", params).json()
+			f"/api/users/{user_id}/history", params)
 
-	def comment_profile(self, user_id: int, text: str) -> dict:
-		data = {
-			"text": text,
-			"profile": user_id
-		}
-		return self._post("/v2/activity/comments/")
-
-	def comment_post(self, post_id: int, text: str) -> dict:
-		data = {
-			"text": text,
-			"post": post_id
-		}
-		return self._post("/v2/activity/comments/")
-
-	def get_forum_tags(self, count: int = 200, page: int = 1) -> None:
-		params = {
-			"count": count,
-			"page": page
-		}
-		return self._get(
-			f"{self.api}/v2/forum/tags", params)
-
-	def get_forum_feed(
+	def get_social_notifications(
 			self,
-			count: int = 20,
-			page: int = 1,
-			week: bool = False,
-			ordering: str = "-id") -> dict:
+			count: int = 30,
+			page: int = 1) -> dict:
 		params = {
 			"count": count,
 			"page": page,
-			"week": week,
-			"ordering": ordering
+			"status": 0,
+			"type": 1
 		}
 		return self._get(
-			f"{self.api}/v2/forum/search", params)
+			"/api/users/notifications/", params)
 
-	def get_post_comments(self, post_id: int, page: int = 1) -> dict:
-		params = {
-			"post_id": post_id,
-			"page": page
-		}
-		return self._get(
-			f"{self.api}/v2/activity/comments", params)
-
-	def create_post(
+	def get_important_notifications(
 			self,
-			header: str,
-			text: str,
-			tags: list[str],
-			attachments: list[str] = None) -> dict:
-		data = {
-			"header": header,
-			"text": text,
-			"tags": tags,
-			"author_user_id": self.user_id
-		}
-		if attachments:
-			data["attachments"] = attachments
-		return self._post("/v2/forum/", data)
-
-	def get_titles_top(
-			self,
-			count: int = 20,
-			page: int = 1,
-			period: str = "new",
-			tag: str = "all") -> dict:
+			count: int = 30,
+			page: int = 1) -> dict:
 		params = {
 			"count": count,
 			"page": page,
-			"period": period,
-			"section": period,
-			"tag": tag
+			"status": 0,
+			"type": 2
 		}
 		return self._get(
-			f"{self.api}/v2/titles/top/?=all", params)
-
-	def get_users_top(
-			self, ordering: str, page: int = 1) -> dict:
-		params = {
-			"ordering": ordering,
-			"page": page
-		}
-		return self._get(
-			f"{self.api}/v2/users/top", params)
+			f"/api/users/notifications/", params)
