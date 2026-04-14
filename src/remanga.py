@@ -1,4 +1,4 @@
-from requests import Session, Response
+from requests import Session
 
 class Remanga:
 	def __init__(self) -> None:
@@ -10,10 +10,10 @@ class Remanga:
 		self.session.headers = {
 			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.5060.114 Safari/537.36"}
 
-	def _post(self, endpoint: str, data: dict) -> Response:
+	def _post(self, endpoint: str, data: dict) -> dict:
 		return self.session.post(f"{self.api}{endpoint}", json=data).json()
 
-	def _get(self, endpoint: str, params: dict = None) -> Response:
+	def _get(self, endpoint: str, params: dict = None) -> dict:
 		return self.session.get(endpoint, params=params).json()
 
 	def login(
